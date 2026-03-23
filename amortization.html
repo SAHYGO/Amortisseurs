@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tableau d'amortissement</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            padding: 30px 20px;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 22px;
+            margin-bottom: 24px;
+            color: #222;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            padding: 20px 24px;
+        }
+
+        .card h2 {
+            font-size: 14px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 16px;
+        }
+
+        .champs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+        }
+
+        .champ label {
+            display: block;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper input,
+        .input-wrapper select {
+            width: 100%;
+            padding: 8px 32px 8px 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 14px;
+            color: #333;
+            background: white;
+            appearance: none;
+            outline: none;
+        }
+
+        .input-wrapper input:focus,
+        .input-wrapper select:focus {
+            border-color: #4a90e2;
+        }
+
+        .input-wrapper .unite {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 12px;
+            color: #999;
+            pointer-events: none;
+        }
+
+        .kpis {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+        }
+
+        .kpi {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 14px 16px;
+            border-top: 3px solid;
+        }
+
+        .kpi.annuite  { border-top-color: #4a90e2; }
+        .kpi.interets { border-top-color: #e74c3c; }
+        .kpi.capital  { border-top-color: #27ae60; }
+        .kpi.cout     { border-top-color: #e67e22; }
+
+        .kpi .nom {
+            font-size: 11px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 6px;
+        }
+
+        .kpi .valeur {
+            font-size: 17px;
+            font-weight: bold;
+        }
+
+        .kpi.annuite  .valeur { color: #4a90e2; }
+        .kpi.interets .valeur { color: #e74c3c; }
+        .kpi.capital  .valeur { color: #27ae60; }
+        .kpi.cout     .valeur { color: #e67e22; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        thead th {
+            text-align: right;
+            padding: 9px 14px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #999;
+            border-bottom: 1px solid #eee;
+            background: #fafafa;
+        }
+
+        thead th:first-child { text-align: center; }
+
+        tbody td {
+            padding: 10px 14px;
+            text-align: right;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        tbody td:first-child {
+            text-align: center;
+            color: #bbb;
+        }
+
+        tbody tr:last-child td { border-bottom: none; }
+        tbody tr:hover { background: #fafafa; }
+
+        .col-interets { color: #e74c3c; }
+        .col-amort    { color: #27ae60; }
+        .col-annuite  { color: #4a90e2; font-weight: bold; }
+        .col-capital  { color: #bbb; }
+
+        tfoot td {
+            padding: 10px 14px;
+            text-align: right;
+            font-weight: bold;
+            border-top: 2px solid #eee;
+            background: #fafafa;
+        }
+
+        tfoot td:first-child {
+            text-align: center;
+            font-size: 11px;
+            color: #999;
+            text-transform: uppercase;
+        }
+
+        .vide {
+            text-align: center;
+            padding: 40px;
+            color: #bbb;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+<h1>Tableau d'Amortissement à Annuités Constantes</h1>
+
+<div class="container">
+
+    <div class="card">
+        <h2>Paramètres</h2>
+        <div class="champs">
+            <div class="champ">
+                <label for="capital">Capital emprunté</label>
+                <div class="input-wrapper">
+                    <input type="number" id="capital" value="100000" min="1" step="1000">
+                    <span class="unite">€</span>
+                </div>
+            </div>
+            <div class="champ">
+                <label for="taux">Taux annuel</label>
+                <div class="input-wrapper">
+                    <input type="number" id="taux" value="3.5" min="0.01" max="100" step="0.01">
+                    <span class="unite">%</span>
+                </div>
+            </div>
+            <div class="champ">
+                <label for="duree">Durée</label>
+                <div class="input-wrapper">
+                    <input type="number" id="duree" value="10" min="1" max="50">
+                    <span class="unite">ans</span>
+                </div>
+            </div>
+            <div class="champ">
+                <label for="periodicite">Périodicité</label>
+                <div class="input-wrapper">
+                    <select id="periodicite">
+                        <option value="12">Mensuelle</option>
+                        <option value="4">Trimestrielle</option>
+                        <option value="2">Semestrielle</option>
+                        <option value="1" selected>Annuelle</option>
+                    </select>
+                    <span class="unite">▾</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="kpis" id="kpis"></div>
+
+    <div class="card" style="padding: 0; overflow: hidden;">
+        <table>
+            <thead>
+                <tr>
+                    <th>N°</th>
+                    <th>Capital début</th>
+                    <th>Intérêts</th>
+                    <th>Amortissement</th>
+                    <th>Annuité</th>
+                    <th>Capital fin</th>
+                </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+            <tfoot id="tfoot"></tfoot>
+        </table>
+    </div>
+
+</div>
+
+<script>
+    const euros = n => n.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+
+    function calculer(V0, tauxAnnuel, annees, freq) {
+        const n  = annees * freq;
+        const i  = tauxAnnuel / 100 / freq;
+        const a  = V0 * i / (1 - Math.pow(1 + i, -n));
+        const A1 = V0 * i / (Math.pow(1 + i, n) - 1);
+
+        const lignes = [];
+        let capital = V0;
+
+        for (let k = 1; k <= n; k++) {
+            const debut  = capital;
+            const int    = debut * i;
+            const amort  = A1 * Math.pow(1 + i, k - 1);
+            const fin    = Math.max(debut - amort, 0);
+            lignes.push({ k, debut, int, amort, annuite: a, fin });
+            capital = fin;
+        }
+
+        return { lignes, annuite: a };
+    }
+
+    function afficher() {
+        const V0   = parseFloat(document.getElementById('capital').value)    || 0;
+        const taux = parseFloat(document.getElementById('taux').value)       || 0;
+        const ans  = parseInt(document.getElementById('duree').value)        || 0;
+        const freq = parseInt(document.getElementById('periodicite').value)  || 1;
+
+        if (V0 <= 0 || taux <= 0 || ans <= 0) {
+            document.getElementById('kpis').innerHTML   = '';
+            document.getElementById('tbody').innerHTML  = `<tr><td colspan="6" class="vide">Renseignez les paramètres pour afficher le tableau.</td></tr>`;
+            document.getElementById('tfoot').innerHTML  = '';
+            return;
+        }
+
+        const { lignes, annuite } = calculer(V0, taux, ans, freq);
+
+        const totalInt   = lignes.reduce((s, l) => s + l.int,    0);
+        const totalAmort = lignes.reduce((s, l) => s + l.amort,  0);
+        const totalAnn   = lignes.reduce((s, l) => s + l.annuite, 0);
+
+        document.getElementById('kpis').innerHTML = `
+            <div class="kpi annuite">
+                <div class="nom">Annuité</div>
+                <div class="valeur">${euros(annuite)}</div>
+            </div>
+            <div class="kpi interets">
+                <div class="nom">Total intérêts</div>
+                <div class="valeur">${euros(totalInt)}</div>
+            </div>
+            <div class="kpi capital">
+                <div class="nom">Capital remboursé</div>
+                <div class="valeur">${euros(totalAmort)}</div>
+            </div>
+            <div class="kpi cout">
+                <div class="nom">Coût total</div>
+                <div class="valeur">${euros(totalAnn)}</div>
+            </div>
+        `;
+
+        document.getElementById('tbody').innerHTML = lignes.map(l => `
+            <tr>
+                <td>${l.k}</td>
+                <td class="col-capital">${euros(l.debut)}</td>
+                <td class="col-interets">${euros(l.int)}</td>
+                <td class="col-amort">${euros(l.amort)}</td>
+                <td class="col-annuite">${euros(l.annuite)}</td>
+                <td class="col-capital">${euros(l.fin)}</td>
+            </tr>
+        `).join('');
+
+        document.getElementById('tfoot').innerHTML = `
+            <tr>
+                <td>Total</td>
+                <td>—</td>
+                <td class="col-interets">${euros(totalInt)}</td>
+                <td class="col-amort">${euros(totalAmort)}</td>
+                <td class="col-annuite">${euros(totalAnn)}</td>
+                <td>—</td>
+            </tr>
+        `;
+    }
+
+    ['capital', 'taux', 'duree', 'periodicite'].forEach(id => {
+        document.getElementById(id).addEventListener('input', afficher);
+    });
+
+    afficher();
+</script>
+
+</body>
+</html>
